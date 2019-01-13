@@ -4,8 +4,8 @@
     "ami_base_name": "",
     "aws_access_key" : "{{ env `AWS_ACCESS_KEY_ID` }}",
     "aws_secret_key": "{{ env `AWS_SECRET_ACCESS_KEY` }}",
-    "vpcid" : "vpc-a19aadc9",
-    "subnetid" : "subnet-a9013ad3",
+    "vpcid" : "<vpcid>",
+    "subnetid" : "<subnet_id>",
     "dockerpassword": "{{env `dockerpassword`}}",
     "dockeruser": "{{env `dockeruser`}}"
     },
@@ -21,7 +21,7 @@
     "subnet_id": "{{user `subnetid`}}",
     "force_delete_snapshot" : "true",
     "force_deregister" : "true",
-    "security_group_id" : "sg-037181a235e5c42eb",
+    "security_group_id" : "<security_group>",
     "associate_public_ip_address": "true",
     "tags": {
       "Name": "JMeterAMI"
