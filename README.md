@@ -184,16 +184,18 @@ Below part of docker.yml is jmeter client execution with desired varible.You can
       network_mode: jmeter_default
       networks:
          - name: jmeter_default
-      image: emregundogdu/jmeter:v6
+      image: "{{ dockerrepository }}:{{ imagetag }}"
+      nofile: 262144:262144
       volumes:
             - "{{volume_from_mount}}:{{volume_to_mount}}"
       command: 
         - "-n -X -Jclient.rmi.localport=7000 -Jserver.rmi.ssl.disable=true"
-        - "-R {% for slave in slaves %}{% if loop.index == loop.length %}{{ slave }}{% else %}{{ slave }},{% endif %}{% endfor %}"
+        - "-R {% for slave in slaves %}{% if loop.index == loop.length %}{{ slave.name }}{% else %}{{ slave.name }},{% endif %}{% endfor %}"
         - "-t {{ volume_to_mount}}/test.jmx"
         - "-l {{ volume_to_mount}}/tmp/result_{{ timestamp }}.jtl"
         - "-j {{ volume_to_mount}}/tmp/jmeter_{{ timestamp }}.log"
         - "-Gsub_user={{ sub_user }} -Gpub_user={{ pub_user }} -Gpub_payload_length={{ pub_payload_length }} -Gpub_loop={{ pub_loop }}"
+  register: client_output
  ```
 After that This roles executed with SSM trigger via Gitlab CI stage if you do not use Gitlab CI or any CI/CD tool you can execute role with manually below command.
 
