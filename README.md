@@ -230,5 +230,11 @@ Finally the Jmeter Test Result file is generated with `result_<data>.jtl` format
 
 #### JMeter Test Result File
    ![Jmeter Client Gui ](testresult.png)
+   
+##### References
+
+- [https://www.blazemeter.com/blog/make-use-of-docker-with-jmeter-learn-how?utm_source=blog&utm_medium=BM_blog&utm_campaign=jmeter-distributed-testing-with-docker](https://www.blazemeter.com/blog/make-use-of-docker-with-jmeter-learn-how?utm_source=blog&utm_medium=BM_blog&utm_campaign=jmeter-distributed-testing-with-docker)
+- [https://github.com/jlavallee/JMeter-Rabbit-AMQP](https://github.com/jlavallee/JMeter-Rabbit-AMQP)
+- [https://github.com/emqx/mqtt-jmeter](https://github.com/emqx/mqtt-jmeter)
   
  
