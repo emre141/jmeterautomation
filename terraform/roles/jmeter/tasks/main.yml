@@ -1,0 +1,10 @@
+- name: Prepare Ansible Role
+  import_tasks: prepare.yml
+  tags:
+   - prepare
+
+- name: Prepare  Jmeter Docker Operations
+  import_tasks: docker.yml
+
+- name: Sync  Test Result to S3
+  import_tasks: s3.yml

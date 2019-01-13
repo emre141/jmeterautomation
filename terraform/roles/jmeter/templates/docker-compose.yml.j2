@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+{% for slave in slaves %}
+  {{ slave.name }}:
+    image: {{ dockerrepository }}:{{ imagetag }}
+    volumes:
+    - {{ volume_from_mount }}:{{ volume_to_mount }}
+    command: -s -n -Jclient.rmi.localport=7000 -Jserver.rmi.localport=60000 -Jserver.rmi.ssl.disable=true {% if slave.offset is defined %}-Joffset={{ slave.offset }}{% else %}{% endif %}
+
+{% endfor %}

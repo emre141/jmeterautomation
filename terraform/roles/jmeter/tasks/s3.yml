@@ -1,0 +1,19 @@
+#- name: sleep for {{ testdurationtime }} seconds and continue with play
+#  wait_for: timeout="{{ testdurationtime }}"
+#  delegate_to: localhost
+
+- name: Wait For Jmeter Client Exited
+  shell: docker wait jmeterclient
+
+- name: Sync S3 Bucket for Test Result Sync
+  s3_sync:
+      file_root:  /opt/jmeter/tmp
+      bucket: "{{ bucket }}"
+      mode: push 
+      file_change_strategy: date_size 
+      permission: public-read
+      region: eu-central-1 
+      exclude: "*.log"
+      key_prefix:  "{{ keyprefix }}"
+      delete: true
+  ignore_errors: True

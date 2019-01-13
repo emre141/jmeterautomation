@@ -1,0 +1,80 @@
+{
+  "variables": {
+    "aws_region": "eu-central-1",
+    "ami_base_name": "",
+    "aws_access_key" : "{{ env `AWS_ACCESS_KEY_ID` }}",
+    "aws_secret_key": "{{ env `AWS_SECRET_ACCESS_KEY` }}",
+    "vpcid" : "vpc-a19aadc9",
+    "subnetid" : "subnet-a9013ad3",
+    "dockerpassword": "{{env `dockerpassword`}}",
+    "dockeruser": "{{env `dockeruser`}}"
+    },
+  "builders": [{
+    "access_key": "{{user `aws_access_key`}}",
+    "secret_key": "{{user `aws_secret_key`}}",
+    "type": "amazon-ebs",
+    "ami_name": "packer-example {{timestamp}}",
+    "ami_description": "An example of how to create a custom AMI on top of Ubuntu",
+    "instance_type": "t2.micro",
+    "region": "{{user `aws_region`}}",
+    "vpc_id": "{{user `vpcid`}}",
+    "subnet_id": "{{user `subnetid`}}",
+    "force_delete_snapshot" : "true",
+    "force_deregister" : "true",
+    "security_group_id" : "sg-037181a235e5c42eb",
+    "associate_public_ip_address": "true",
+    "tags": {
+      "Name": "JMeterAMI"
+    },
+          
+    "source_ami_filter": {
+      "filters": {
+        "virtualization-type": "hvm",
+        "name": "amzn2-ami-hvm-2.0.????????-x86_64-gp2",
+        "root-device-type": "ebs"
+      },
+      "owners": ["amazon"],
+      "most_recent": true
+    },
+
+    "ssh_username": "ec2-user"
+    }
+  ],
+  "provisioners" : [
+    {
+      "type" : "shell",
+      "script": "Scripts/prepare.sh",
+      "environment_vars" : [
+        "dockerpassword={{ user `dockerpassword`}}",
+        "dockeruser={{user `dockeruser`}}"
+      ]
+    },
+    {
+      "type": "file",
+      "source" : "ToUpload/",
+      "destination": "/tmp"  
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "aws configure set aws_access_key_id  {{user `aws_access_key`}}",
+        "aws configure set aws_secret_access_key {{user `aws_secret_key`}}",
+        "aws configure set region {{user `aws_region`}}",
+        "sudo mv /tmp/* /opt/jmeter",
+        "sudo chmod 777 /opt/jmeter"
+      ] 
+    },
+    {
+      "type": "file",
+      "source" : "./",
+      "destination": "/tmp"
+    },
+    {
+      "type" : "ansible-local",
+      "playbook_file" : "test.yml",
+      "staging_directory" : "/opt/jmeter/roles",
+      "playbook_dir" : "terraform/roles",
+      "extra_arguments": [ "--extra-vars \"bucket=jmetertestresult-850526132661 keyprefix=mqtttestresult\"", "--tags prepare" ]
+    }
+  ]
+}

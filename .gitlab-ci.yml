@@ -1,0 +1,130 @@
+image: docker.siemens.com/mindsphere-mainline/infrastructure/hub/aws-ms-packer:v1
+
+stages:
+- AMIBuild
+- plan
+- apply
+- RunTest
+- destroy
+
+.common: &common
+  before_script:
+  - export AWS_ACCOUNT_ID=`jq -r .${ENVIRONMENT}.account_id info.json`
+  - terraform --version
+  - terraform init --backend-config "bucket=tf-state-${AWS_ACCOUNT_ID}" --backend-config "key=${STATE_FILE}" --backend-config "region=${AWS_REGION}"
+  - terraform get
+  - terraform plan --var-file ${ENVIRONMENT}.tfvars
+  when: manual
+  tags:
+  - mindsphere-mainline runner
+
+.plan_common: &plan_common
+  <<: *common
+  stage: plan
+  script:
+  - echo "plan"
+
+
+.update_common: &update_common
+  <<: *common
+  stage: RunTest
+  script:
+  - cp terraform/lambda/triggerdestroy.py .
+  - zip -r terraform/lambda/triggerdestroy.zip triggerdestroy.py
+  - terraform apply --var-file ${ENVIRONMENT}.tfvars
+  - export AWS_DEFAULT_REGION='eu-central-1'
+  - export instance_tag=`terraform output instance_tag`
+  - export ssm_doc_name=`terraform output ssm_doc_name`
+  - export bucket_name=`terraform output bucket_name`
+  - export service_role_arn=`terraform output service_role_arn`
+  - export aws_sns_topic_arn=`terraform output aws_sns_topic_arn`
+  - export s3_key_prefix=`terraform output s3_key_prefix`
+  - aws ssm send-command --document-name "${ssm_doc_name}"
+    --targets '{"Key":"tag:Name","Values":["'"${instance_tag}"'"]}'
+    --service-role-arn "${service_role_arn}"
+    --notification-config NotificationArn=${aws_sns_topic_arn},NotificationEvents=Success,NotificationType=Invocation
+    --parameters '{}' --timeout-seconds 600
+    --output-s3-bucket-name "${bucket_name}"
+    --output-s3-key-prefix "${s3_key_prefix}" --region eu-central-1
+
+.apply_common: &apply_common
+  <<: *common
+  script:
+  - cp terraform/lambda/triggerdestroy.py .
+  - zip -r terraform/lambda/triggerdestroy.zip triggerdestroy.py
+  - terraform apply --var-file ${ENVIRONMENT}.tfvars
+  stage: apply
+
+.destroy_common: &destroy_common
+  <<: *common
+  script:
+  - terraform destroy --force --var-file ${ENVIRONMENT}.tfvars
+  stage: destroy
+
+custom_ami_build:
+  variables:
+    TF_VAR_aws_access_key: $DEV_ACCESS_KEY
+    TF_VAR_aws_secret_key: $DEV_SECRET_KEY
+    AWS_ACCESS_KEY_ID: $DEV_ACCESS_KEY
+    AWS_SECRET_ACCESS_KEY: $DEV_SECRET_KEY
+    AWS_REGION: eu-central-1
+  stage: AMIBuild
+  tags:
+  - mindsphere-mainline runner
+  script:
+  - sh terraform/run.sh ${DEV_ACCESS_KEY} ${DEV_SECRET_KEY} ${DEV_ACCOUNT} ${AWS_REGION}
+  when: manual
+
+
+dev_teamlatest-plan:
+  <<: *plan_common
+  variables:
+    TF_VAR_aws_access_key: $DEV_ACCESS_KEY
+    TF_VAR_aws_secret_key: $DEV_SECRET_KEY
+    AWS_ACCESS_KEY_ID: $DEV_ACCESS_KEY
+    AWS_SECRET_ACCESS_KEY: $DEV_SECRET_KEY
+    AWS_REGION: eu-central-1
+    ENVIRONMENT: dev_teamlatest
+    STATE_FILE: MS-JMETER-TeamLatest/terraform.state
+
+
+
+dev_teamlatest-apply:
+  <<: *apply_common
+  variables:
+    TF_VAR_aws_access_key: $DEV_ACCESS_KEY
+    TF_VAR_aws_secret_key: $DEV_SECRET_KEY
+    AWS_ACCESS_KEY_ID: $DEV_ACCESS_KEY
+    AWS_SECRET_ACCESS_KEY: $DEV_SECRET_KEY
+    AWS_REGION: eu-central-1
+    ENVIRONMENT: dev_teamlatest
+    STATE_FILE: MS-JMETER-TeamLatest/terraform.state
+
+
+
+
+dev_teamlatest-runtest:
+  <<: *update_common
+  variables:
+    TF_VAR_aws_access_key: $DEV_ACCESS_KEY
+    TF_VAR_aws_secret_key: $DEV_SECRET_KEY
+    AWS_ACCESS_KEY_ID: $DEV_ACCESS_KEY
+    AWS_SECRET_ACCESS_KEY: $DEV_SECRET_KEY
+    AWS_REGION: eu-central-1
+    ENVIRONMENT: dev_teamlatest
+    STATE_FILE: MS-JMETER-TeamLatest/terraform.state
+
+
+
+dev_teamlatest-destroy:
+  <<: *destroy_common
+  variables:
+    TF_VAR_aws_access_key: $DEV_ACCESS_KEY
+    TF_VAR_aws_secret_key: $DEV_SECRET_KEY
+    AWS_ACCESS_KEY_ID: $DEV_ACCESS_KEY
+    AWS_SECRET_ACCESS_KEY: $DEV_SECRET_KEY
+    AWS_REGION: eu-central-1
+    ENVIRONMENT: dev_teamlatest
+    STATE_FILE: MS-JMETER-TeamLatest/terraform.state
+
+

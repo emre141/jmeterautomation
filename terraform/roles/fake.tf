@@ -1,0 +1,1 @@
+variable "module_path" {}

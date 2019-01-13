@@ -1,0 +1,40 @@
+- name: Install Some Package
+  yum:
+    name: ["git","dos2unix"]
+
+- name: Installing docker-compose
+  pip:
+    name: ["docker-compose","boto", "boto3", "awscli" ,"botocore"]
+
+
+- name: Get  Terraform from Tar File
+  get_url:
+    url: https://releases.hashicorp.com/terraform/0.11.11/terraform_0.11.11_linux_amd64.zip
+    dest: /tmp
+
+- name: Unarchive Terraform to Default Extra User Binary Path
+  unarchive:
+    src: /tmp/terraform_0.11.11_linux_amd64.zip
+    dest: /usr/local/bin
+    remote_src: yes
+
+- name: add {{extra_path}} to path
+  lineinfile:
+    dest: /etc/environment
+    state: present
+    backrefs: no
+    regex: '^PATH='
+    insertafter: "EOF"
+    line: "PATH={{ lookup('env', 'PATH') }}:{{extra_path}}"
+
+
+- name: Prepate Docker Compose YAML
+  template:
+    src: docker-compose.yml.j2
+    dest: /opt/jmeter/docker-compose.yml
+  register: configchange
+
+- name: Copy Jmeter JMX File
+  copy:
+    src: test.jmx
+    dest: /opt/jmeter

@@ -1,0 +1,18 @@
+volume_from_mount: /opt/jmeter
+volume_to_mount: /mnt/jmeter
+projectsrc: /opt/jmeter
+dockernetwork: jmeter_default
+dockerrepository: emregundogdu/jmeter
+imagename: jmeter
+imagetag: v7
+dockerfilepath: /opt/jmeter
+testdurationtime: 70
+JAVA_OPTS: true
+sub_user: 150  # Each Container start number of Threads User Count for Subscriber Slave Containers
+pub_user: 150  # Each Container start number of Threads User Count for Publisher Slave Containers
+pub_loop: 60   # How many time publisher publish message and Subscriber subscribe message
+pub_payload_length: 8000 # Give Byte
+#slaveinstances: ["slave-1" ,"slave-2" ,"slave-3", "slave-4", "slave-5", "slave-6", "slave-7", "slave-8", "slave-9","slave-10"]
+#offsets: ["0" ,"1000", "2000", "3000", "4000", "5000", "6000","7000","8000","9000"]
+slaveinstancecount: 10
+extra_path: /usr/local/bin

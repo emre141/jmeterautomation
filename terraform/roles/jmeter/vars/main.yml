@@ -1,0 +1,21 @@
+slaves:
+- name: slave-1
+  offset: 0
+- name: slave-2
+  offset: 1000
+- name: slave-3
+  offset: 2000
+- name: slave-4
+  offset: 3000
+- name: slave-5
+  offset: 4000
+- name: slave-6
+  offset: 5000
+- name: slave-7
+  offset: 6000
+- name: slave-8
+  offset: 7000
+- name: slave-9
+  offset: 8000
+- name: slave-10
+  offset: 9000

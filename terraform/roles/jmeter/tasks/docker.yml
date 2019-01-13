@@ -1,0 +1,83 @@
+---
+- name: Get Local Timestamp and Set it fact
+  set_fact:
+     timestamp: "{{ lookup('pipe','date +%Y-%m-%d-%H-%M-%S') }}"
+
+- name: Lookup SSM Parameter for Docker Registry Username
+  set_fact:
+     dockeruser: "{{ lookup('aws_ssm', 'dockeruser', region='eu-central-1' ) }}"
+
+- name: Lookup SSM Parameter for Docker Registry Username
+  set_fact:
+     dockerpass: "{{ lookup('aws_ssm', 'dockerpass', region='eu-central-1' ) }}"
+
+- name: Print Local Timestamp
+  debug: msg="{{ lookup('pipe','date +%Y-%m-%d-%H-%M-%S') }}"
+
+- name: Enable Docker Deamon
+  systemd:
+      name: docker
+      enabled: yes
+      state: started
+
+- name: Create Docker Network
+  docker_network:
+      name: "{{ dockernetwork }}" 
+      state: present
+
+- name: Docker Login
+  docker_login:
+      username: "{{ dockeruser }}"
+      password: "{{ dockerpass }}"
+      state: present
+      registry_url: https://index.docker.io/v1/
+      api_version: auto
+
+- name: Build Docker Images from Docker File
+  docker_image:
+      name: "{{ imagename }}"
+      tag: "{{ imagetag }}"
+      repository: "{{ dockerrepository }}"
+      path: "{{ dockerfilepath }}"
+      pull: yes
+      state: present
+      push: yes
+      rm: true
+      api_version: auto
+      force: yes
+
+- name: Docker Compose
+  docker_service:
+    project_src: "{{projectsrc}}"
+  register: slaves_output
+
+- debug:
+    var: slaves_output
+
+
+- name: sleep for 20 seconds and continue with play
+  wait_for: timeout=10
+  delegate_to: localhost
+
+- name: Run Jmeter Docker Both Master and Slave
+  docker_container:
+      name: jmeterclient
+      network_mode: jmeter_default
+      networks:
+         - name: jmeter_default
+      image: "{{ dockerrepository }}:{{ imagetag }}"
+      nofile: 262144:262144
+      volumes:
+            - "{{volume_from_mount}}:{{volume_to_mount}}"
+      command: 
+        - "-n -X -Jclient.rmi.localport=7000 -Jserver.rmi.ssl.disable=true"
+        - "-R {% for slave in slaves %}{% if loop.index == loop.length %}{{ slave.name }}{% else %}{{ slave.name }},{% endif %}{% endfor %}"
+        - "-t {{ volume_to_mount}}/test.jmx"
+        - "-l {{ volume_to_mount}}/tmp/result_{{ timestamp }}.jtl"
+        - "-j {{ volume_to_mount}}/tmp/jmeter_{{ timestamp }}.log"
+        - "-Gsub_user={{ sub_user }} -Gpub_user={{ pub_user }} -Gpub_payload_length={{ pub_payload_length }} -Gpub_loop={{ pub_loop }}"
+  register: client_output
+
+- debug:
+    var: client_output
+

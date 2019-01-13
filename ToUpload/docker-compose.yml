@@ -1,0 +1,55 @@
+version: '3'
+
+services:
+  slave-1:
+    image: emregundogdu/jmeter:v6
+    environment:
+    - JAVA_OPTS="-Xms1024m -Xmx24g"
+    volumes:
+    - /opt/jmeter:/mnt/jmeter
+    command: -s -n -Jclient.rmi.localport=7000 -Jserver.rmi.localport=60000 -Jserver.rmi.ssl.disable=true -Jthreads=1
+  slave-2:
+    image: emregundogdu/jmeter:v6
+    volumes:
+    - /opt/jmeter:/mnt/jmeter
+    command: -s -n -Jclient.rmi.localport=7000 -Jserver.rmi.localport=60000 -Jserver.rmi.ssl.disable=true
+  slave-3:
+    image: emregundogdu/jmeter:v6
+    volumes:
+    - /opt/jmeter:/mnt/jmeter
+    command: -s -n -Jclient.rmi.localport=7000 -Jserver.rmi.localport=60000 -Jserver.rmi.ssl.disable=true
+  slave-4:
+    image: emregundogdu/jmeter:v6
+    volumes:
+    - /opt/jmeter:/mnt/jmeter
+    command: -s -n -Jclient.rmi.localport=7000 -Jserver.rmi.localport=60000 -Jserver.rmi.ssl.disable=true
+  slave-5:
+    image: emregundogdu/jmeter:v6
+    volumes:
+    - /opt/jmeter:/mnt/jmeter
+    command: -s -n -Jclient.rmi.localport=7000 -Jserver.rmi.localport=60000 -Jserver.rmi.ssl.disable=true
+  slave-6:
+    image: emregundogdu/jmeter:v6
+    volumes:
+    - /opt/jmeter:/mnt/jmeter
+    command: -s -n -Jclient.rmi.localport=7000 -Jserver.rmi.localport=60000 -Jserver.rmi.ssl.disable=true
+  slave-7:
+    image: emregundogdu/jmeter:v6
+    volumes:
+    - /opt/jmeter:/mnt/jmeter
+    command: -s -n -Jclient.rmi.localport=7000 -Jserver.rmi.localport=60000 -Jserver.rmi.ssl.disable=true
+  slave-8:
+    image: emregundogdu/jmeter:v6
+    volumes:
+    - /opt/jmeter:/mnt/jmeter
+    command: -s -n -Jclient.rmi.localport=7000 -Jserver.rmi.localport=60000 -Jserver.rmi.ssl.disable=true
+  slave-9:
+    image: emregundogdu/jmeter:v6
+    volumes:
+    - /opt/jmeter:/mnt/jmeter
+    command: -s -n -Jclient.rmi.localport=7000 -Jserver.rmi.localport=60000 -Jserver.rmi.ssl.disable=true
+  slave-10:
+    image: emregundogdu/jmeter:v6
+    volumes:
+    - /opt/jmeter:/mnt/jmeter
+    command: -s -n -Jclient.rmi.localport=7000 -Jserver.rmi.localport=60000 -Jserver.rmi.ssl.disable=true

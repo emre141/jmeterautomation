@@ -1,0 +1,7 @@
+- hosts: localhost
+  become: true
+  roles:
+  - role: /opt/jmeter/roles/jmeter
+    vars:
+      bucket: 'jmetertestresult-850526132661'
+      keyprefix: 'rabbitmqloadtest'
